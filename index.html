@@ -143,11 +143,7 @@
   <div class="card">
     <div class="sec-head">
       <div class="badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
-      <div><h3>Invoer</h3><p id="invoerSub">Noteer het moment dat het gebeurt</p></div>
-    </div>
-    <div id="editBanner" style="display:none; background:var(--accent-light); color:var(--accent); font-size:13px; font-weight:600; padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:12px; align-items:center; justify-content:space-between;">
-      <span>U bewerkt een bestaand item</span>
-      <button id="cancelEditBtn" style="width:auto; padding:4px 10px; font-size:12px; border:none; background:transparent; color:var(--accent); text-decoration:underline;">Annuleren</button>
+      <div><h3>Invoer</h3><p>Noteer het moment dat het gebeurt</p></div>
     </div>
 
     <div class="row">
@@ -194,8 +190,8 @@
     </div>
 
     <button class="primary" id="addBtn">
-      <svg id="addBtnIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      <span id="addBtnLabel">Toevoegen</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Toevoegen
     </button>
   </div>
 
@@ -302,30 +298,14 @@ let entries = [];
 let editingIndex = null;
 
 function startEdit(idx){
-  const e = entries[idx];
-  if(!e) return;
   editingIndex = idx;
-  document.getElementById('maand').value = String(e.maand);
-  document.getElementById('jaar').value = e.jaar;
-  document.getElementById('dag').value = e.dag;
-  document.getElementById('categorie').value = e.categorie;
-  document.getElementById('tekst').value = e.tekst;
-  document.getElementById('editBanner').style.display = 'flex';
-  document.getElementById('addBtnLabel').textContent = 'Opslaan';
-  document.getElementById('invoerSub').textContent = 'Wijzig de gegevens en sla op';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  render();
 }
 
 function cancelEdit(){
   editingIndex = null;
-  document.getElementById('editBanner').style.display = 'none';
-  document.getElementById('addBtnLabel').textContent = 'Toevoegen';
-  document.getElementById('invoerSub').textContent = 'Noteer het moment dat het gebeurt';
-  document.getElementById('dag').value = '';
-  document.getElementById('tekst').value = '';
+  render();
 }
-
-document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
 
 const now = new Date();
 document.getElementById('maand').value = String(now.getMonth()+1);
@@ -362,6 +342,16 @@ function setStatus(msg){
 function shortCat(c){ return c.length > 34 ? c.slice(0,32) + '…' : c; }
 function sortKey(e){ return `${e.jaar}-${String(e.maand).padStart(2,'0')}-${String(e.dag).padStart(2,'0')}`; }
 
+function maandOptionsHTML(selected){
+  return MAANDEN.slice(1).map((naam,i)=>{
+    const val = i+1;
+    return `<option value="${val}"${val===selected?' selected':''}>${naam}</option>`;
+  }).join('');
+}
+function catOptionsHTML(selected){
+  return CATS.map(c=>`<option value="${c.replace(/"/g,'&quot;')}"${c===selected?' selected':''}>${c}</option>`).join('');
+}
+
 function getFiltered(){
   const allMonths = document.getElementById('allMonths').checked;
   const maand = parseInt(document.getElementById('filterMaand').value);
@@ -391,6 +381,22 @@ function render(){
   const sorted = [...filtered].sort((a,b)=> sortKey(a).localeCompare(sortKey(b)));
   list.innerHTML = sorted.map((e) => {
     const realIdx = entries.indexOf(e);
+    if(realIdx === editingIndex){
+      return `<div class="entry" style="flex-direction:column; background:var(--accent-light); border-color:var(--accent);">
+        <div style="font-size:12px; font-weight:700; color:var(--accent); margin-bottom:8px;">Bewerken</div>
+        <div class="row" style="width:100%; margin-bottom:10px;">
+          <select class="editMaand" style="flex:2;">${maandOptionsHTML(e.maand)}</select>
+          <input type="number" class="editJaar" value="${e.jaar}" style="flex:1;" min="2020" max="2100">
+          <input type="number" class="editDag" value="${e.dag}" placeholder="dag" min="1" max="31" style="width:70px; flex-shrink:0;">
+        </div>
+        <select class="editCat" style="width:100%; margin-bottom:10px;">${catOptionsHTML(e.categorie)}</select>
+        <textarea class="editTekst" rows="2" style="width:100%; margin-bottom:10px;">${e.tekst.replace(/</g,'&lt;')}</textarea>
+        <div class="flexrow" style="width:100%;">
+          <button class="primary saveEditBtn" data-idx="${realIdx}">Opslaan</button>
+          <button class="cancelEditBtn">Annuleren</button>
+        </div>
+      </div>`;
+    }
     return `<div class="entry">
       <div class="body">
         <span class="cat">${shortCat(e.categorie)}</span>
@@ -407,8 +413,27 @@ function render(){
   }).join('');
   list.querySelectorAll('.editBtn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
+      startEdit(parseInt(btn.getAttribute('data-idx')));
+    });
+  });
+  list.querySelectorAll('.cancelEditBtn').forEach(btn=>{
+    btn.addEventListener('click', cancelEdit);
+  });
+  list.querySelectorAll('.saveEditBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
       const idx = parseInt(btn.getAttribute('data-idx'));
-      startEdit(idx);
+      const card = btn.closest('.entry');
+      const maand = parseInt(card.querySelector('.editMaand').value);
+      const jaar = parseInt(card.querySelector('.editJaar').value);
+      const dag = parseInt(card.querySelector('.editDag').value);
+      const categorie = card.querySelector('.editCat').value;
+      const tekst = card.querySelector('.editTekst').value.trim();
+      if(!dag || dag<1 || dag>31 || !tekst){ setStatus('Vul een dag (1-31) en tekst in.'); return; }
+      entries[idx] = {maand, jaar, dag, categorie, tekst};
+      save();
+      editingIndex = null;
+      render();
+      setStatus('Item bijgewerkt.');
     });
   });
   list.querySelectorAll('.delBtn').forEach(btn=>{
@@ -441,20 +466,12 @@ document.getElementById('addBtn').addEventListener('click', ()=>{
   const categorie = document.getElementById('categorie').value;
   const tekst = document.getElementById('tekst').value.trim();
   if(!dag || dag<1 || dag>31 || !tekst){ setStatus('Vul een dag (1-31) en tekst in.'); return; }
-  if(editingIndex !== null){
-    entries[editingIndex] = {maand, jaar, dag, categorie, tekst};
-    save();
-    cancelEdit();
-    render();
-    setStatus('Item bijgewerkt.');
-  } else {
-    entries.push({maand, jaar, dag, categorie, tekst});
-    save();
-    document.getElementById('dag').value = '';
-    document.getElementById('tekst').value = '';
-    render();
-    setStatus('Toegevoegd aan het logboek.');
-  }
+  entries.push({maand, jaar, dag, categorie, tekst});
+  save();
+  document.getElementById('dag').value = '';
+  document.getElementById('tekst').value = '';
+  render();
+  setStatus('Toegevoegd aan het logboek.');
 });
 
 function buildExportText(){

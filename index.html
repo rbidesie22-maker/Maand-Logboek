@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Maandlogboek">
+<title>Maandlogboek NMC</title>
+<link rel="icon" href="data:,">
+<style>
+  :root{
+    --bg:#eef1f5; --card:#ffffff; --border:#e2e5ea;
+    --text:#1a1d23; --text-secondary:#666d78; --text-muted:#9aa0aa;
+    --accent:#2563a8; --accent-light:#e8f1fa; --accent-dark:#184a80;
+    --danger:#c0392b; --danger-light:#fbecea;
+    --radius:14px; --radius-sm:9px;
+    --shadow:0 1px 2px rgba(20,25,35,0.04), 0 4px 14px rgba(20,25,35,0.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14161a; --card:#1e2126; --border:#2c3038;
+      --text:#eef0f3; --text-secondary:#9ba1ab; --text-muted:#6c7280;
+      --accent:#5b9bd8; --accent-light:#1c2c3c; --accent-dark:#8ec1ee;
+      --danger:#e07a6d; --danger-light:#3a2220;
+      --shadow:0 1px 2px rgba(0,0,0,0.2), 0 4px 14px rgba(0,0,0,0.3);
+    }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    font-size:16px; line-height:1.5; padding-bottom:40px;
+  }
+  .wrap{max-width:480px; margin:0 auto; padding:0 16px;}
+  header{
+    padding:22px 16px 18px; text-align:center; background:linear-gradient(180deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color:#fff; margin-bottom:18px;
+  }
+  header .icon{
+    width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,0.18);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 10px;
+  }
+  header h1{font-size:19px; font-weight:700; margin:0 0 4px; letter-spacing:-0.2px;}
+  header p{font-size:13px; margin:0; opacity:0.85;}
+
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px; margin-bottom:18px; box-shadow:var(--shadow);
+  }
+  .sec-head{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .sec-head .badge{
+    width:30px; height:30px; border-radius:9px; background:var(--accent-light); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .sec-head h3{font-size:16px; font-weight:700; margin:0; color:var(--text);}
+  .sec-head p{font-size:12.5px; color:var(--text-muted); margin:1px 0 0;}
+
+  label{display:block; font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.3px;}
+  .field{margin-bottom:14px;}
+  .row{display:flex; gap:10px;}
+  .row > .field{flex:1; margin-bottom:0;}
+  .row + .field, .field + .field{margin-top:14px;}
+
+  select, input, textarea{
+    width:100%; font-family:inherit; font-size:15px; color:var(--text); background:var(--bg);
+    border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px;
+    appearance:none; -webkit-appearance:none;
+  }
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa0aa' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px;}
+  textarea{resize:vertical; min-height:60px;}
+  select:focus, input:focus, textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-light);}
+
+  .dag-field{max-width:88px; flex:0 0 88px !important;}
+
+  button{
+    cursor:pointer; font-family:inherit; font-weight:600; font-size:14.5px; display:flex; align-items:center;
+    justify-content:center; gap:7px; width:100%; padding:12px; border-radius:var(--radius-sm);
+    border:1px solid var(--border); background:var(--card); color:var(--text);
+  }
+  button:active{transform:scale(0.97);}
+  button svg{flex-shrink:0;}
+  button.primary{background:var(--accent); color:#fff; border-color:var(--accent);}
+  button.danger-text{background:transparent; color:var(--danger); border-color:transparent; padding:8px;}
+
+  .flexrow{display:flex; gap:10px;}
+  .flexrow > button{flex:1;}
+
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; background:var(--bg); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:14px;}
+  .toggle-row span{font-size:13.5px; color:var(--text-secondary); font-weight:500;}
+  .switch{position:relative; width:42px; height:24px; flex-shrink:0;}
+  .switch input{opacity:0; width:100%; height:100%; position:absolute; margin:0; cursor:pointer;}
+  .switch .track{position:absolute; inset:0; background:var(--border); border-radius:12px; transition:background .15s;}
+  .switch .thumb{position:absolute; top:2px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.3); transition:transform .15s;}
+  .switch input:checked + .track{background:var(--accent);}
+  .switch input:checked + .track + .thumb{transform:translateX(18px);}
+
+  .result-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .result-head span{font-size:13px; color:var(--text-muted); font-weight:600;}
+  .count-pill{background:var(--accent-light); color:var(--accent); font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px;}
+
+  .entry{
+    border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:9px;
+    display:flex; gap:10px; align-items:flex-start; background:var(--bg);
+  }
+  .entry .body{flex:1; min-width:0;}
+  .entry .cat{
+    display:inline-block; font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-light);
+    padding:2px 8px; border-radius:6px; margin-bottom:6px;
+  }
+  .entry .date{font-size:12.5px; color:var(--text-muted); font-weight:600; margin-bottom:3px;}
+  .entry .txt{font-size:14.5px; color:var(--text); word-wrap:break-word;}
+  .delBtn{border:none; background:transparent; width:30px; height:30px; flex-shrink:0; padding:0; color:var(--text-muted); display:flex; align-items:center; justify-content:center; border-radius:8px;}
+  .delBtn:active{background:var(--danger-light); color:var(--danger);}
+
+  .empty{color:var(--text-muted); font-size:14px; text-align:center; padding:22px 10px;}
+
+  .hint{font-size:12px; color:var(--text-muted); margin-top:10px; margin-bottom:0; line-height:1.5;}
+  .divider{height:1px; background:var(--border); margin:16px 0;}
+
+  #status{
+    position:fixed; left:16px; right:16px; bottom:16px; max-width:448px; margin:0 auto;
+    background:var(--text); color:var(--bg); font-size:13.5px; font-weight:500; text-align:center;
+    padding:11px 16px; border-radius:11px; opacity:0; transform:translateY(8px); pointer-events:none;
+    transition:opacity .2s, transform .2s; box-shadow:0 6px 20px rgba(0,0,0,0.25);
+  }
+  #status.show{opacity:1; transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6a1 1 0 0 1 1 1v2H8V3a1 1 0 0 1 1-1z"/><path d="M6 5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M8 11h8M8 15h5"/></svg>
+  </div>
+  <h1>Maandlogboek NMC</h1>
+  <p>Bijzonderheden bijhouden, per sectie klaar voor uw maandverslag</p>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="sec-head">
+      <div class="badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div><h3>Invoer</h3><p>Noteer het moment dat het gebeurt</p></div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Maand</label>
+        <select id="maand">
+          <option value="1">januari</option><option value="2">februari</option><option value="3">maart</option>
+          <option value="4">april</option><option value="5">mei</option><option value="6">juni</option>
+          <option value="7">juli</option><option value="8">augustus</option><option value="9">september</option>
+          <option value="10">oktober</option><option value="11">november</option><option value="12">december</option>
+        </select>
+      </div>
+      <div class="field" style="max-width:84px; flex:0 0 84px;">
+        <label>Jaar</label>
+        <input type="number" id="jaar" min="2020" max="2100">
+      </div>
+      <div class="field dag-field">
+        <label>Dag</label>
+        <input type="number" id="dag" placeholder="1-31" min="1" max="31">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Categorie</label>
+      <select id="categorie">
+        <option value="6. Systemen en Instrumentarium">6. Systemen en Instrumentarium</option>
+        <option value="7. Terrein">7. Terrein</option>
+        <option value="8. Gebouw en Onderhoud">8. Gebouw en Onderhoud</option>
+        <option value="9. Transport">9. Transport</option>
+        <option value="13. Waterlevering SWM">13. Waterlevering SWM</option>
+        <option value="14. Maaiwerkzaamheden door Gambier R. of luchthavenbeheer">14. Maaiwerkzaamheden</option>
+        <option value="15. Vergaderingen/ Trainingen/ Workshops">15. Vergaderingen/Trainingen</option>
+        <option value="17. Stakingen/ Issues">17. Stakingen/Issues</option>
+        <option value="19. Andere bijzonderheden (Logboek/ Meteo groepapps)">19. Andere bijzonderheden</option>
+        <option value="20. Relevante mails gestuurd door ondergetekende naar OD en HMD">20. Relevante mails</option>
+        <option value="Stroomonderbrekingen">Stroomonderbrekingen</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Wat is er gebeurd</label>
+      <textarea id="tekst" placeholder="Kort en bondig..." rows="2"></textarea>
+    </div>
+
+    <button class="primary" id="addBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Toevoegen
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="sec-head">
+      <div class="badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M7 12h10M10 19h4"/></svg></div>
+      <div><h3>Bekijken en downloaden</h3><p>Filter eerst, exporteer dan</p></div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Maand</label>
+        <select id="filterMaand">
+          <option value="1">januari</option><option value="2">februari</option><option value="3">maart</option>
+          <option value="4">april</option><option value="5">mei</option><option value="6">juni</option>
+          <option value="7">juli</option><option value="8">augustus</option><option value="9">september</option>
+          <option value="10">oktober</option><option value="11">november</option><option value="12">december</option>
+        </select>
+      </div>
+      <div class="field" style="max-width:96px; flex:0 0 96px;">
+        <label>Jaar</label>
+        <input type="number" id="filterJaar" min="2020" max="2100">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Categorie</label>
+      <select id="catFilter"><option value="">Alle categorieën</option></select>
+    </div>
+
+    <div class="toggle-row">
+      <span>Alle maanden tonen</span>
+      <label class="switch">
+        <input type="checkbox" id="allMonths">
+        <span class="track"></span><span class="thumb"></span>
+      </label>
+    </div>
+
+    <div class="result-head">
+      <span>Resultaat</span>
+      <span class="count-pill" id="count">0</span>
+    </div>
+    <div id="list"></div>
+
+    <div class="divider"></div>
+
+    <div class="flexrow">
+      <button id="copyBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Kopieer</button>
+      <button id="downloadTxtBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Tekst</button>
+    </div>
+    <div class="flexrow" style="margin-top:10px;">
+      <button class="primary" id="downloadDocxBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Word</button>
+      <button id="shareDocxBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 3.9M15.4 6.6L8.6 10.5"/></svg>Deel / mail</button>
+    </div>
+    <p class="hint">Kopiëren/downloaden neemt precies over wat hierboven bij "Resultaat" staat. "Deel / mail" opent uw telefoon's deelvenster (bv. Gmail), met het Word-bestand al bijgevoegd. Word-knoppen hebben eenmalig internet nodig.</p>
+
+    <div class="divider"></div>
+
+    <button class="danger-text" id="deleteBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0l-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16z"/></svg>
+      Verwijder deze periode
+    </button>
+    <p class="hint">Verwijdert precies wat hierboven bij "Resultaat" staat. Download of kopieer eerst — dit kan niet ongedaan gemaakt worden.</p>
+  </div>
+
+</div>
+
+<div id="status"></div>
+
+<script src="https://unpkg.com/docx/build/index.js"></script>
+<script>
+const STORAGE_KEY = 'maandlogboek_nmc_v1';
+const CATS = [
+  "6. Systemen en Instrumentarium","7. Terrein","8. Gebouw en Onderhoud","9. Transport",
+  "13. Waterlevering SWM","14. Maaiwerkzaamheden door Gambier R. of luchthavenbeheer",
+  "15. Vergaderingen/ Trainingen/ Workshops","17. Stakingen/ Issues",
+  "19. Andere bijzonderheden (Logboek/ Meteo groepapps)",
+  "20. Relevante mails gestuurd door ondergetekende naar OD en HMD","Stroomonderbrekingen"
+];
+const MAANDEN = ['','januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+let entries = [];
+
+const now = new Date();
+document.getElementById('maand').value = String(now.getMonth()+1);
+document.getElementById('jaar').value = now.getFullYear();
+document.getElementById('filterMaand').value = String(now.getMonth()+1);
+document.getElementById('filterJaar').value = now.getFullYear();
+
+const catFilterSel = document.getElementById('catFilter');
+CATS.forEach(c=>{
+  const o = document.createElement('option');
+  o.value = c; o.textContent = c;
+  catFilterSel.appendChild(o);
+});
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    entries = raw ? JSON.parse(raw) : [];
+  }catch(e){ entries = []; }
+  render();
+}
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
+  catch(e){ setStatus('Opslaan mislukt op dit toestel.'); }
+}
+let statusTimer;
+function setStatus(msg){
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(()=>{ el.classList.remove('show'); }, 3000);
+}
+function shortCat(c){ return c.length > 34 ? c.slice(0,32) + '…' : c; }
+function sortKey(e){ return `${e.jaar}-${String(e.maand).padStart(2,'0')}-${String(e.dag).padStart(2,'0')}`; }
+
+function getFiltered(){
+  const allMonths = document.getElementById('allMonths').checked;
+  const maand = parseInt(document.getElementById('filterMaand').value);
+  const jaar = parseInt(document.getElementById('filterJaar').value);
+  const cat = catFilterSel.value;
+  return entries.filter(e=>{
+    if(!allMonths && (e.maand !== maand || e.jaar !== jaar)) return false;
+    if(cat && e.categorie !== cat) return false;
+    return true;
+  });
+}
+
+function render(){
+  const list = document.getElementById('list');
+  const count = document.getElementById('count');
+  const filtered = getFiltered();
+  count.textContent = filtered.length;
+  if(filtered.length === 0){
+    list.innerHTML = '<div class="empty">Niets gevonden voor deze periode/categorie.</div>';
+    return;
+  }
+  const sorted = [...filtered].sort((a,b)=> sortKey(a).localeCompare(sortKey(b)));
+  list.innerHTML = sorted.map((e) => {
+    const realIdx = entries.indexOf(e);
+    return `<div class="entry">
+      <div class="body">
+        <span class="cat">${shortCat(e.categorie)}</span>
+        <div class="date">${e.dag} ${MAANDEN[e.maand]} ${e.jaar}</div>
+        <div class="txt">${e.tekst.replace(/</g,'&lt;')}</div>
+      </div>
+      <button data-idx="${realIdx}" class="delBtn" aria-label="Verwijder">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0l-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16z"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.delBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = parseInt(btn.getAttribute('data-idx'));
+      entries.splice(idx,1);
+      save();
+      render();
+    });
+  });
+}
+
+document.getElementById('filterMaand').addEventListener('change', render);
+document.getElementById('filterJaar').addEventListener('input', render);
+catFilterSel.addEventListener('change', render);
+document.getElementById('allMonths').addEventListener('change', render);
+
+document.getElementById('addBtn').addEventListener('click', ()=>{
+  const maand = parseInt(document.getElementById('maand').value);
+  const jaar = parseInt(document.getElementById('jaar').value);
+  const dag = parseInt(document.getElementById('dag').value);
+  const categorie = document.getElementById('categorie').value;
+  const tekst = document.getElementById('tekst').value.trim();
+  if(!dag || dag<1 || dag>31 || !tekst){ setStatus('Vul een dag (1-31) en tekst in.'); return; }
+  entries.push({maand, jaar, dag, categorie, tekst});
+  save();
+  document.getElementById('dag').value = '';
+  document.getElementById('tekst').value = '';
+  render();
+  setStatus('Toegevoegd aan het logboek.');
+});
+
+function buildExportText(){
+  const filtered = getFiltered();
+  const blocks = [];
+  CATS.forEach(cat=>{
+    const items = filtered.filter(e=>e.categorie===cat).sort((a,b)=>sortKey(a).localeCompare(sortKey(b)));
+    if(items.length === 0) return;
+    const body = items.map(e => `${e.dag} ${MAANDEN[e.maand]} ${e.jaar}: ${e.tekst}`).join('\n');
+    blocks.push(cat + '\n' + body);
+  });
+  return blocks.join('\n\n');
+}
+
+document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  const text = buildExportText();
+  if(!text){ setStatus('Niets om te kopiëren in dit resultaat.'); return; }
+  try{ await navigator.clipboard.writeText(text); setStatus('Gekopieerd naar klembord.'); }
+  catch(e){ setStatus('Kopiëren niet gelukt in deze browser.'); }
+});
+
+function fileBaseName(){
+  const allMonths = document.getElementById('allMonths').checked;
+  const maand = document.getElementById('filterMaand').value;
+  const jaar = document.getElementById('filterJaar').value;
+  return allMonths ? 'maandlogboek_alle' : 'maandlogboek_' + MAANDEN[maand] + '_' + jaar;
+}
+
+document.getElementById('downloadTxtBtn').addEventListener('click', ()=>{
+  const text = buildExportText();
+  if(!text){ setStatus('Niets om te downloaden in dit resultaat.'); return; }
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fileBaseName() + '.txt'; a.click();
+  URL.revokeObjectURL(url);
+  setStatus('Tekstbestand gedownload.');
+});
+
+async function buildDocxBlob(filtered){
+  const { Document, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, Packer } = docx;
+  const children = [];
+  CATS.forEach(cat=>{
+    const items = filtered.filter(e=>e.categorie===cat).sort((a,b)=>sortKey(a).localeCompare(sortKey(b)));
+    if(items.length === 0) return;
+    children.push(new Paragraph({ spacing:{ before:240, after:80 }, children:[ new TextRun({ text: cat, bold:true, size:24 }) ] }));
+    const paras = items.map(e => new Paragraph({
+      children:[
+        new TextRun({ text: `${e.dag} ${MAANDEN[e.maand]} ${e.jaar}: `, bold:true }),
+        new TextRun({ text: e.tekst })
+      ]
+    }));
+    children.push(new Table({
+      width:{ size:100, type:WidthType.PERCENTAGE },
+      rows:[ new TableRow({ children:[ new TableCell({ children: paras, margins:{top:100,bottom:100,left:100,right:100} }) ] }) ]
+    }));
+    children.push(new Paragraph({ text:"" }));
+  });
+  const doc = new Document({ sections:[{ children }] });
+  return await Packer.toBlob(doc);
+}
+
+document.getElementById('downloadDocxBtn').addEventListener('click', async ()=>{
+  const filtered = getFiltered();
+  if(filtered.length === 0){ setStatus('Niets om te downloaden in dit resultaat.'); return; }
+  if(typeof docx === 'undefined'){ setStatus('Word-module kon niet laden (internet nodig). Gebruik "Tekst".'); return; }
+  try{
+    const blob = await buildDocxBlob(filtered);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileBaseName() + '.docx'; a.click();
+    URL.revokeObjectURL(url);
+    setStatus('Word-bestand gedownload.');
+  }catch(e){
+    setStatus('Word-export mislukt. Gebruik "Tekst" als terugval.');
+  }
+});
+
+document.getElementById('shareDocxBtn').addEventListener('click', async ()=>{
+  const filtered = getFiltered();
+  if(filtered.length === 0){ setStatus('Niets om te delen in dit resultaat.'); return; }
+  if(typeof docx === 'undefined'){ setStatus('Word-module kon niet laden (internet nodig).'); return; }
+  try{
+    const blob = await buildDocxBlob(filtered);
+    const file = new File([blob], fileBaseName() + '.docx', { type: blob.type });
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      await navigator.share({ files:[file], title:'Maandlogboek NMC', text: fileBaseName() });
+      setStatus('Deelvenster geopend.');
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fileBaseName() + '.docx'; a.click();
+      URL.revokeObjectURL(url);
+      setStatus('Delen wordt hier niet ondersteund — bestand gedownload, voeg het handmatig toe aan uw mail.');
+    }
+  }catch(e){
+    if(e.name === 'AbortError'){ setStatus('Delen geannuleerd.'); }
+    else{ setStatus('Delen mislukt. Gebruik "Word" als terugval.'); }
+  }
+});
+
+document.getElementById('deleteBtn').addEventListener('click', ()=>{
+  const filtered = getFiltered();
+  if(filtered.length === 0){ setStatus('Niets te verwijderen in dit resultaat.'); return; }
+  const allMonths = document.getElementById('allMonths').checked;
+  const periodLabel = allMonths ? 'ALLE maanden' : (MAANDEN[document.getElementById('filterMaand').value] + ' ' + document.getElementById('filterJaar').value);
+  const catLabel = catFilterSel.value ? ` (alleen "${catFilterSel.value}")` : '';
+  const ok = confirm(`${filtered.length} item(s) uit ${periodLabel}${catLabel} verwijderen? Zorg dat u eerst gedownload/gekopieerd heeft — dit kan niet ongedaan gemaakt worden.`);
+  if(!ok) return;
+  entries = entries.filter(e => !filtered.includes(e));
+  save();
+  render();
+  setStatus('Verwijderd.');
+});
+
+load();
+</script>
+</body>
+</html>

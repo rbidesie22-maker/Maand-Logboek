@@ -143,7 +143,11 @@
   <div class="card">
     <div class="sec-head">
       <div class="badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
-      <div><h3>Invoer</h3><p>Noteer het moment dat het gebeurt</p></div>
+      <div><h3>Invoer</h3><p id="invoerSub">Noteer het moment dat het gebeurt</p></div>
+    </div>
+    <div id="editBanner" style="display:none; background:var(--accent-light); color:var(--accent); font-size:13px; font-weight:600; padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:12px; align-items:center; justify-content:space-between;">
+      <span>U bewerkt een bestaand item</span>
+      <button id="cancelEditBtn" style="width:auto; padding:4px 10px; font-size:12px; border:none; background:transparent; color:var(--accent); text-decoration:underline;">Annuleren</button>
     </div>
 
     <div class="row">
@@ -190,8 +194,8 @@
     </div>
 
     <button class="primary" id="addBtn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      Toevoegen
+      <svg id="addBtnIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      <span id="addBtnLabel">Toevoegen</span>
     </button>
   </div>
 
@@ -214,6 +218,14 @@
       <div class="field" style="max-width:96px; flex:0 0 96px;">
         <label>Jaar</label>
         <input type="number" id="filterJaar" min="2020" max="2100">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Dag (optioneel: 1 dag of van–tot)</label>
+      <div class="row">
+        <input type="number" id="filterDagVan" placeholder="van" min="1" max="31">
+        <input type="number" id="filterDagTot" placeholder="tot (optioneel)" min="1" max="31">
       </div>
     </div>
 
@@ -287,6 +299,33 @@ const CATS = [
 ];
 const MAANDEN = ['','januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
 let entries = [];
+let editingIndex = null;
+
+function startEdit(idx){
+  const e = entries[idx];
+  if(!e) return;
+  editingIndex = idx;
+  document.getElementById('maand').value = String(e.maand);
+  document.getElementById('jaar').value = e.jaar;
+  document.getElementById('dag').value = e.dag;
+  document.getElementById('categorie').value = e.categorie;
+  document.getElementById('tekst').value = e.tekst;
+  document.getElementById('editBanner').style.display = 'flex';
+  document.getElementById('addBtnLabel').textContent = 'Opslaan';
+  document.getElementById('invoerSub').textContent = 'Wijzig de gegevens en sla op';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelEdit(){
+  editingIndex = null;
+  document.getElementById('editBanner').style.display = 'none';
+  document.getElementById('addBtnLabel').textContent = 'Toevoegen';
+  document.getElementById('invoerSub').textContent = 'Noteer het moment dat het gebeurt';
+  document.getElementById('dag').value = '';
+  document.getElementById('tekst').value = '';
+}
+
+document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
 
 const now = new Date();
 document.getElementById('maand').value = String(now.getMonth()+1);
@@ -328,9 +367,14 @@ function getFiltered(){
   const maand = parseInt(document.getElementById('filterMaand').value);
   const jaar = parseInt(document.getElementById('filterJaar').value);
   const cat = catFilterSel.value;
+  const dagVanRaw = document.getElementById('filterDagVan').value;
+  const dagTotRaw = document.getElementById('filterDagTot').value;
+  const dagVan = dagVanRaw ? parseInt(dagVanRaw) : null;
+  const dagTot = dagTotRaw ? parseInt(dagTotRaw) : (dagVan || null);
   return entries.filter(e=>{
     if(!allMonths && (e.maand !== maand || e.jaar !== jaar)) return false;
     if(cat && e.categorie !== cat) return false;
+    if(dagVan && (e.dag < dagVan || e.dag > dagTot)) return false;
     return true;
   });
 }
@@ -353,11 +397,20 @@ function render(){
         <div class="date">${e.dag} ${MAANDEN[e.maand]} ${e.jaar}</div>
         <div class="txt">${e.tekst.replace(/</g,'&lt;')}</div>
       </div>
+      <button data-idx="${realIdx}" class="editBtn" aria-label="Bewerk" style="border:none; background:transparent; width:30px; height:30px; flex-shrink:0; padding:0; color:var(--text-muted); display:flex; align-items:center; justify-content:center; border-radius:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
       <button data-idx="${realIdx}" class="delBtn" aria-label="Verwijder">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0l-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16z"/></svg>
       </button>
     </div>`;
   }).join('');
+  list.querySelectorAll('.editBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = parseInt(btn.getAttribute('data-idx'));
+      startEdit(idx);
+    });
+  });
   list.querySelectorAll('.delBtn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const idx = parseInt(btn.getAttribute('data-idx'));
@@ -365,6 +418,7 @@ function render(){
       if(!e) return;
       const ok = confirm(`Dit item verwijderen?\n\n${e.dag} ${MAANDEN[e.maand]} ${e.jaar} — ${e.categorie}\n"${e.tekst}"\n\nDit kan niet ongedaan gemaakt worden.`);
       if(!ok) return;
+      if(editingIndex !== null) cancelEdit();
       entries.splice(idx,1);
       save();
       render();
@@ -375,6 +429,8 @@ function render(){
 
 document.getElementById('filterMaand').addEventListener('change', render);
 document.getElementById('filterJaar').addEventListener('input', render);
+document.getElementById('filterDagVan').addEventListener('input', render);
+document.getElementById('filterDagTot').addEventListener('input', render);
 catFilterSel.addEventListener('change', render);
 document.getElementById('allMonths').addEventListener('change', render);
 
@@ -385,12 +441,20 @@ document.getElementById('addBtn').addEventListener('click', ()=>{
   const categorie = document.getElementById('categorie').value;
   const tekst = document.getElementById('tekst').value.trim();
   if(!dag || dag<1 || dag>31 || !tekst){ setStatus('Vul een dag (1-31) en tekst in.'); return; }
-  entries.push({maand, jaar, dag, categorie, tekst});
-  save();
-  document.getElementById('dag').value = '';
-  document.getElementById('tekst').value = '';
-  render();
-  setStatus('Toegevoegd aan het logboek.');
+  if(editingIndex !== null){
+    entries[editingIndex] = {maand, jaar, dag, categorie, tekst};
+    save();
+    cancelEdit();
+    render();
+    setStatus('Item bijgewerkt.');
+  } else {
+    entries.push({maand, jaar, dag, categorie, tekst});
+    save();
+    document.getElementById('dag').value = '';
+    document.getElementById('tekst').value = '';
+    render();
+    setStatus('Toegevoegd aan het logboek.');
+  }
 });
 
 function buildExportText(){
@@ -500,6 +564,7 @@ document.getElementById('deleteBtn').addEventListener('click', ()=>{
   const catLabel = catFilterSel.value ? ` (alleen "${catFilterSel.value}")` : '';
   const ok = confirm(`${filtered.length} item(s) uit ${periodLabel}${catLabel} verwijderen? Zorg dat u eerst gedownload/gekopieerd heeft — dit kan niet ongedaan gemaakt worden.`);
   if(!ok) return;
+  if(editingIndex !== null) cancelEdit();
   entries = entries.filter(e => !filtered.includes(e));
   save();
   render();

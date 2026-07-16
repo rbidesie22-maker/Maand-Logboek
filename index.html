@@ -176,9 +176,10 @@
         <option value="13. Waterlevering SWM">13. Waterlevering SWM</option>
         <option value="14. Maaiwerkzaamheden door Gambier R. of luchthavenbeheer">14. Maaiwerkzaamheden</option>
         <option value="15. Vergaderingen/ Trainingen/ Workshops">15. Vergaderingen/Trainingen</option>
+        <option value="16. Rapportages/ Dienstovertredingen">16. Rapportages/Dienstovertredingen</option>
         <option value="17. Stakingen/ Issues">17. Stakingen/Issues</option>
+        <option value="18. Relevante mails gestuurd door ondergetekende naar OD en HMD">18. Relevante mails</option>
         <option value="19. Andere bijzonderheden (Logboek/ Meteo groepapps)">19. Andere bijzonderheden</option>
-        <option value="20. Relevante mails gestuurd door ondergetekende naar OD en HMD">20. Relevante mails</option>
         <option value="Stroomonderbrekingen">Stroomonderbrekingen</option>
       </select>
     </div>
@@ -280,9 +281,9 @@ const STORAGE_KEY = 'maandlogboek_nmc_v1';
 const CATS = [
   "6. Systemen en Instrumentarium","7. Terrein","8. Gebouw en Onderhoud","9. Transport",
   "13. Waterlevering SWM","14. Maaiwerkzaamheden door Gambier R. of luchthavenbeheer",
-  "15. Vergaderingen/ Trainingen/ Workshops","17. Stakingen/ Issues",
-  "19. Andere bijzonderheden (Logboek/ Meteo groepapps)",
-  "20. Relevante mails gestuurd door ondergetekende naar OD en HMD","Stroomonderbrekingen"
+  "15. Vergaderingen/ Trainingen/ Workshops","16. Rapportages/ Dienstovertredingen","17. Stakingen/ Issues",
+  "18. Relevante mails gestuurd door ondergetekende naar OD en HMD",
+  "19. Andere bijzonderheden (Logboek/ Meteo groepapps)","Stroomonderbrekingen"
 ];
 const MAANDEN = ['','januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
 let entries = [];
@@ -360,9 +361,14 @@ function render(){
   list.querySelectorAll('.delBtn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const idx = parseInt(btn.getAttribute('data-idx'));
+      const e = entries[idx];
+      if(!e) return;
+      const ok = confirm(`Dit item verwijderen?\n\n${e.dag} ${MAANDEN[e.maand]} ${e.jaar} — ${e.categorie}\n"${e.tekst}"\n\nDit kan niet ongedaan gemaakt worden.`);
+      if(!ok) return;
       entries.splice(idx,1);
       save();
       render();
+      setStatus('Item verwijderd.');
     });
   });
 }

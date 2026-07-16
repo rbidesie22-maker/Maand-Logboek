@@ -256,11 +256,25 @@
     <p class="hint">Verwijdert precies wat hierboven bij "Resultaat" staat. Download of kopieer eerst — dit kan niet ongedaan gemaakt worden.</p>
   </div>
 
+  <button id="exitBtn" style="margin-bottom:14px;">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    Afsluiten
+  </button>
+
+  <p style="text-align:center; font-size:12px; color:var(--text-muted); margin:0 0 8px;">Designed by Ranoe Bidesie</p>
+
 </div>
 
 <div id="status"></div>
 
-<script src="https://unpkg.com/docx/build/index.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script>
+if(typeof docx === 'undefined'){
+  var fb = document.createElement('script');
+  fb.src = 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';
+  document.body.appendChild(fb);
+}
+</script>
 <script>
 const STORAGE_KEY = 'maandlogboek_nmc_v1';
 const CATS = [
@@ -484,6 +498,13 @@ document.getElementById('deleteBtn').addEventListener('click', ()=>{
   save();
   render();
   setStatus('Verwijderd.');
+});
+
+document.getElementById('exitBtn').addEventListener('click', ()=>{
+  window.close();
+  setTimeout(()=>{
+    setStatus('Sluiten lukt hier niet automatisch — veeg de app omhoog weg, zoals bij elke app.');
+  }, 300);
 });
 
 load();

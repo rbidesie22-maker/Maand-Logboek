@@ -648,6 +648,9 @@ document.getElementById('topBtn').addEventListener('click', ()=>{
 });
 
 const INFOCHECK_KEY = 'infocheck_nmc_v1';
+if(navigator.storage && navigator.storage.persist){
+  navigator.storage.persist().catch(()=>{});
+}
 const REMINDER_KEY = 'reminder_nmc_v1';
 const TODO_KEY = 'todo_nmc_v1';
 

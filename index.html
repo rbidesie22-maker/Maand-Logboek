@@ -30,7 +30,7 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{
     margin:0; background:var(--bg); color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;
     font-size:16px; line-height:1.5; padding-bottom:40px;
   }
   .wrap{max-width:480px; margin:0 auto; padding:0 16px;}
@@ -69,7 +69,7 @@
     appearance:none; -webkit-appearance:none;
   }
   select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa0aa' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px;}
-  textarea{resize:vertical; min-height:60px;}
+  textarea{resize:vertical; min-height:100px;}
   select:focus, input:focus, textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-light);}
 
   .dag-field{max-width:88px; flex:0 0 88px !important;}
@@ -89,6 +89,18 @@
 
   .toggle-row{display:flex; align-items:center; justify-content:space-between; background:var(--bg); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:14px;}
   .toggle-row span{font-size:13.5px; color:var(--text-secondary); font-weight:500;}
+
+  .tabbar{display:grid; grid-template-columns:1fr 1fr; gap:6px; background:var(--bg); border-radius:var(--radius-sm); padding:4px; margin-bottom:16px;}
+  .tabbtn{width:auto; padding:9px 6px; font-size:13px; font-weight:600; border:none; background:transparent; color:var(--text-secondary); border-radius:7px;}
+  .tabbtn.active{background:var(--card); color:var(--accent); box-shadow:0 1px 2px rgba(0,0,0,0.08);}
+  :root{ --green:#1a8a4a; --green-light:#e5f6ec; --amber:#a8660f; --amber-light:#fbf0de; --purple:#6b3fa8; --purple-light:#f0e9fb; }
+  @media (prefers-color-scheme: dark){ :root{ --green:#4ada85; --green-light:#153823; --amber:#e0a350; --amber-light:#3a2c14; --purple:#c19bef; --purple-light:#2a2036; } }
+  .tabbtn.green-tab{color:var(--green);}
+  .tabbtn.green-tab.active{background:var(--green-light); color:var(--green); box-shadow:none;}
+  .tabbtn.amber-tab{color:var(--amber);}
+  .tabbtn.amber-tab.active{background:var(--amber-light); color:var(--amber); box-shadow:none;}
+  .tabbtn.purple-tab{color:var(--purple);}
+  .tabbtn.purple-tab.active{background:var(--purple-light); color:var(--purple); box-shadow:none;}
   .switch{position:relative; width:42px; height:24px; flex-shrink:0;}
   .switch input{opacity:0; width:100%; height:100%; position:absolute; margin:0; cursor:pointer;}
   .switch .track{position:absolute; inset:0; background:var(--border); border-radius:12px; transition:background .15s;}
@@ -101,16 +113,16 @@
   .count-pill{background:var(--accent-light); color:var(--accent); font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px;}
 
   .entry{
-    border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:9px;
+    border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:11px;
     display:flex; gap:10px; align-items:flex-start; background:var(--bg);
   }
   .entry .body{flex:1; min-width:0;}
   .entry .cat{
     display:inline-block; font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-light);
-    padding:2px 8px; border-radius:6px; margin-bottom:6px;
+    padding:2px 8px; border-radius:6px; margin-bottom:8px;
   }
-  .entry .date{font-size:12.5px; color:var(--text-muted); font-weight:600; margin-bottom:3px;}
-  .entry .txt{font-size:14.5px; color:var(--text); word-wrap:break-word;}
+  .entry .date{font-size:12.5px; color:var(--text-muted); font-weight:600; margin-bottom:5px;}
+  .entry .txt{font-size:15px; color:var(--text); word-wrap:break-word; line-height:1.6;}
   .delBtn{border:none; background:transparent; width:30px; height:30px; flex-shrink:0; padding:0; color:var(--text-muted); display:flex; align-items:center; justify-content:center; border-radius:8px;}
   .delBtn:active{background:var(--danger-light); color:var(--danger);}
 
@@ -145,6 +157,15 @@
       <div class="badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
       <div><h3>Invoer</h3><p>Noteer het moment dat het gebeurt</p></div>
     </div>
+
+    <div class="tabbar">
+      <button class="tabbtn active" id="tabInvoerBtn">Invoer</button>
+      <button class="tabbtn green-tab" id="tabInfoCheckBtn">Information check</button>
+      <button class="tabbtn amber-tab" id="tabReminderBtn">Reminder</button>
+      <button class="tabbtn purple-tab" id="tabTodoBtn">To do list</button>
+    </div>
+
+    <div id="invoerPanel">
 
     <div class="row">
       <div class="field">
@@ -186,13 +207,47 @@
 
     <div class="field">
       <label>Wat is er gebeurd</label>
-      <textarea id="tekst" placeholder="Kort en bondig..." rows="2"></textarea>
+      <textarea id="tekst" placeholder="Kort en bondig..." rows="6" style="min-height:150px;"></textarea>
     </div>
 
     <button class="primary" id="addBtn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       Toevoegen
     </button>
+    </div>
+
+    <div id="infoCheckPanel" style="display:none;">
+      <div style="background:var(--green-light); color:var(--green); font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:var(--radius-sm); margin-bottom:12px;">
+        Overzicht van de bronnen die u moet nalopen voor het maandverslag (logboeken, apps, mails, enz.), zodat u niets vergeet. Wordt automatisch bewaard.
+      </div>
+      <div class="field">
+        <textarea id="infoCheckText" placeholder="Bijvoorbeeld:&#10;- Logboek NMC (papieren logboek op kantoor)&#10;- Meteo-personeelsgroepsapp (WhatsApp)&#10;- Mailbox: mails naar OD en HMD&#10;- WX-boek en Klima-net&#10;- Groepsapp observers Zanderij" rows="10" style="min-height:220px; border-color:var(--green);"></textarea>
+      </div>
+      <button id="saveInfoCheckBtn" style="background:var(--green); color:#fff; border-color:var(--green);">Opslaan</button>
+      <p class="hint" id="infoCheckSavedHint"></p>
+    </div>
+
+    <div id="reminderPanel" style="display:none;">
+      <div style="background:var(--amber-light); color:var(--amber); font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:var(--radius-sm); margin-bottom:12px;">
+        Herinneringen voor uzelf — dingen die u niet mag vergeten. Wordt automatisch bewaard.
+      </div>
+      <div class="field">
+        <textarea id="reminderText" placeholder="Bijvoorbeeld: bellen met OD over verlofaanvraag, terugkoppelen naar Rajai..." rows="10" style="min-height:220px; border-color:var(--amber);"></textarea>
+      </div>
+      <button id="saveReminderBtn" style="background:var(--amber); color:#fff; border-color:var(--amber);">Opslaan</button>
+      <p class="hint" id="reminderSavedHint"></p>
+    </div>
+
+    <div id="todoPanel" style="display:none;">
+      <div style="background:var(--purple-light); color:var(--purple); font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:var(--radius-sm); margin-bottom:12px;">
+        Uw takenlijst — wat nog gedaan moet worden. Wordt automatisch bewaard.
+      </div>
+      <div class="field">
+        <textarea id="todoText" placeholder="Bijvoorbeeld: - rooster juni opstellen&#10;- presentielijst opsturen&#10;- verdampingspan laten repareren" rows="10" style="min-height:220px; border-color:var(--purple);"></textarea>
+      </div>
+      <button id="saveTodoBtn" style="background:var(--purple); color:#fff; border-color:var(--purple);">Opslaan</button>
+      <p class="hint" id="todoSavedHint"></p>
+    </div>
   </div>
 
   <div class="card">
@@ -592,6 +647,55 @@ document.getElementById('topBtn').addEventListener('click', ()=>{
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
+const INFOCHECK_KEY = 'infocheck_nmc_v1';
+const REMINDER_KEY = 'reminder_nmc_v1';
+const TODO_KEY = 'todo_nmc_v1';
+
+function loadInfoCheck(){
+  try{ document.getElementById('infoCheckText').value = localStorage.getItem(INFOCHECK_KEY) || ''; }catch(e){}
+  try{ document.getElementById('reminderText').value = localStorage.getItem(REMINDER_KEY) || ''; }catch(e){}
+  try{ document.getElementById('todoText').value = localStorage.getItem(TODO_KEY) || ''; }catch(e){}
+}
+document.getElementById('saveInfoCheckBtn').addEventListener('click', ()=>{
+  try{
+    localStorage.setItem(INFOCHECK_KEY, document.getElementById('infoCheckText').value);
+    const hint = document.getElementById('infoCheckSavedHint');
+    hint.textContent = 'Opgeslagen.';
+    setTimeout(()=>{ hint.textContent = ''; }, 2500);
+  }catch(e){ setStatus('Opslaan mislukt op dit toestel.'); }
+});
+document.getElementById('saveReminderBtn').addEventListener('click', ()=>{
+  try{
+    localStorage.setItem(REMINDER_KEY, document.getElementById('reminderText').value);
+    const hint = document.getElementById('reminderSavedHint');
+    hint.textContent = 'Opgeslagen.';
+    setTimeout(()=>{ hint.textContent = ''; }, 2500);
+  }catch(e){ setStatus('Opslaan mislukt op dit toestel.'); }
+});
+document.getElementById('saveTodoBtn').addEventListener('click', ()=>{
+  try{
+    localStorage.setItem(TODO_KEY, document.getElementById('todoText').value);
+    const hint = document.getElementById('todoSavedHint');
+    hint.textContent = 'Opgeslagen.';
+    setTimeout(()=>{ hint.textContent = ''; }, 2500);
+  }catch(e){ setStatus('Opslaan mislukt op dit toestel.'); }
+});
+
+const allTabs = ['Invoer','InfoCheck','Reminder','Todo'];
+const panelIds = { Invoer:'invoerPanel', InfoCheck:'infoCheckPanel', Reminder:'reminderPanel', Todo:'todoPanel' };
+const btnIds = { Invoer:'tabInvoerBtn', InfoCheck:'tabInfoCheckBtn', Reminder:'tabReminderBtn', Todo:'tabTodoBtn' };
+function showTab(name){
+  allTabs.forEach(t=>{
+    document.getElementById(panelIds[t]).style.display = (t===name) ? '' : 'none';
+    document.getElementById(btnIds[t]).classList.toggle('active', t===name);
+  });
+}
+document.getElementById('tabInvoerBtn').addEventListener('click', ()=>showTab('Invoer'));
+document.getElementById('tabInfoCheckBtn').addEventListener('click', ()=>showTab('InfoCheck'));
+document.getElementById('tabReminderBtn').addEventListener('click', ()=>showTab('Reminder'));
+document.getElementById('tabTodoBtn').addEventListener('click', ()=>showTab('Todo'));
+
+loadInfoCheck();
 load();
 </script>
 </body>
